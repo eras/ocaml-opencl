@@ -1,0 +1,7 @@
+version = "0.0.0"
+description = "OpenCL bindings"
+requires = "bigarray"
+archive(byte) = "opencl.cma"
+archive(byte, plugin) = "opencl.cma"
+archive(native) = "opencl.cmxa"
+archive(native, plugin) = "opencl.cmxs"
