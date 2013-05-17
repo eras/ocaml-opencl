@@ -27,6 +27,8 @@ ifndef RESULT
 endif
 export RESULT := $(strip $(RESULT))
 
+CMIRESULT ?= RESULT
+
 export LIB_PACK_NAME
 
 ifndef DOC_FILES
@@ -520,7 +522,7 @@ ifndef STATIC
 endif
 
 ifndef LIBINSTALL_FILES
-  LIBINSTALL_FILES := $(RESULT).mli $(RESULT).cmi $(RESULT).cma \
+  LIBINSTALL_FILES := $(CMIRESULT).mli $(CMIRESULT).cmi $(RESULT).cma \
 		      $(RESULT).cmxa $(RESULT).$(EXT_LIB) $(RES_CLIB)
   ifndef STATIC
     ifneq ($(strip $(OBJ_LINK)),)
