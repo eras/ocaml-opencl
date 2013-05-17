@@ -2,6 +2,7 @@ SYSTEM := $(shell ocamlc -config 2>/dev/null | grep system | sed 's/system: //')
 
 SOURCES = openCL_stubs.c openCL.ml
 RESULT = opencl
+CMIRESULT = openCL
 ifeq ($(SYSTEM),"macosx")
   CFRAMEWORKS = OpenCL
 else
