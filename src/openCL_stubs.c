@@ -522,6 +522,15 @@ CAMLprim value caml_opencl_set_kernel_arg_buffer(value kernel, value index, valu
   CAMLreturn(Val_unit);
 }
 
+CAMLprim value caml_opencl_set_kernel_arg_local(value kernel, value index, int bytes)
+{
+  CAMLparam3(kernel, index, bytes);
+
+  check_err(clSetKernelArg(Kernel_val(kernel), Int_val(index), Int_val(bytes), NULL));
+
+  CAMLreturn(Val_unit);
+}
+
 CAMLprim value caml_opencl_set_kernel_arg_int(value kernel, value index, value _n)
 {
   CAMLparam3(kernel, index, _n);

@@ -117,13 +117,15 @@ module Kernel : sig
 
   val create : Program.t -> string -> t
 
-  type argument = [ `Buffer of Buffer.t | `Int of int ]
+  type argument = [ `Buffer of Buffer.t | `Int of int | `Local of int ]
 
   val set_args : t -> argument array -> unit
 
   val set_arg_int : t -> int -> int -> unit
 
   val set_arg_buffer : t -> int -> Buffer.t -> unit
+
+  val set_arg_local : t -> int -> int -> unit
 end
 
 module Event : sig

@@ -211,13 +211,16 @@ module Kernel = struct
 
   external set_arg_buffer : t -> int -> Buffer.t -> unit = "caml_opencl_set_kernel_arg_buffer"
 
-  type argument = [ `Buffer of Buffer.t | `Int of int ]
+  external set_arg_local : t -> int -> int -> unit = "caml_opencl_set_kernel_arg_local"
+
+  type argument = [ `Buffer of Buffer.t | `Int of int | `Local of int ]
 
   let set_args k (a:argument array) =
     for i = 0 to Array.length a - 1 do
       match a.(i) with
         | `Buffer b -> set_arg_buffer k i b
         | `Int n -> set_arg_int k i n
+        | `Local n -> set_arg_local k i n
     done
 end
 
