@@ -179,6 +179,9 @@ module Program = struct
         done
       with
         | End_of_file -> ()
+	| exn ->
+	  close_in ic;
+	  raise exn
     );
     close_in ic;
     create_with_source c !src
