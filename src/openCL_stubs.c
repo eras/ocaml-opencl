@@ -16,6 +16,8 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <ctype.h>
+#include <string.h>
 
 static inline void check_err(cl_int err)
 {
@@ -34,6 +36,7 @@ static inline void check_err_free(cl_int err, void *p)
 
 #define Val_platform_id(p) (value)p
 #define Platform_id_val(v) (cl_platform_id)v
+#define Device_id_val(v) (cl_device_id)v
 
 CAMLprim value caml_opencl_platform_ids(value unit)
 {
@@ -82,6 +85,151 @@ CAMLprim value caml_opencl_platform_info(value _id, value var)
   check_err(clGetPlatformInfo(id, Platform_info_val(var), len, s, NULL));
   ans = caml_copy_string(s);
   CAMLreturn(ans);
+}
+
+CAMLprim static value Val_di_cl_uint(void* var, size_t size)
+{
+  return Val_int(*(uint*) var);
+}
+
+CAMLprim static value Val_di_cl_ulong(void* var, size_t size)
+{
+  return caml_copy_int64(*(cl_ulong*) var);
+}
+
+CAMLprim static value Val_di_size_t(void* var, size_t size)
+{
+  return Val_int(*(uint*) var);
+}
+
+CAMLprim static value Val_di_cl_bool(void* var, size_t size)
+{
+  return Val_bool(*(cl_bool*) var);
+}
+
+CAMLprim static value Val_di_cl_string(void* var, size_t size)
+{
+  return caml_copy_string((char*) var);
+}
+
+CAMLprim static value Val_di_cl_platform_id(void* var, size_t size)
+{
+  return Val_platform_id((cl_platform_id) var);
+}
+
+typedef value (*postprocess_fn)(void* var, size_t size);
+
+// Given a label CL_DEVICE_ADDRESS_BITS discards the CL_DEVICE prefix,
+// lowercases the ADDRESS_BITS except for its first letter, resulting
+// in Address_bits. The resulting value is then made into a hash
+// variant.
+static value device_info_variant(const char* key)
+{
+  const char* prefix = "CL_DEVICE_";
+  const int prefix_len = strlen(prefix);
+  if (strlen(key) > prefix_len &&
+      strncmp(key, prefix, prefix_len) == 0) {
+    char buffer[1024];
+    int buf_idx;
+    buffer[0] = key[prefix_len];
+    for (buf_idx = 1; key[buf_idx + prefix_len]; ++buf_idx) {
+      buffer[buf_idx] = tolower(key[buf_idx + prefix_len]);
+    }
+    buffer[buf_idx] = 0;
+    return hash_variant(buffer);
+  } else {
+    // the key wasn't of form CL_DEVICE_X
+    assert(0);
+  }
+}
+
+static cl_platform_info Device_info(value var, postprocess_fn* postprocess)
+{
+#define KEY(key, type)                          \
+  if (var == device_info_variant(#key)) {       \
+    *postprocess = Val_di_##type;               \
+    return key;                                 \
+  } else
+  KEY(CL_DEVICE_ADDRESS_BITS                  , cl_uint)
+  KEY(CL_DEVICE_AVAILABLE                     , cl_bool)
+  KEY(CL_DEVICE_COMPILER_AVAILABLE            , cl_bool)
+    //KEY(CL_DEVICE_DOUBLE_FP_CONFIG              , cl_device_fp_config)
+  KEY(CL_DEVICE_ENDIAN_LITTLE                 , cl_bool)
+  KEY(CL_DEVICE_ERROR_CORRECTION_SUPPORT      , cl_bool)
+    //KEY(CL_DEVICE_EXECUTION_CAPABILITIES        , cl_device_exec_capabilities)
+    /* CL_EXEC_KERNEL - The OpenCL device can execute OpenCL kernels.  */
+    /* CL_EXEC_NATIVE_KERNEL - The OpenCL device can execute native kernels.  The mandated minimum capability is CL_EXEC_KERNEL. */
+  KEY(CL_DEVICE_EXTENSIONS                    , cl_string)
+  KEY(CL_DEVICE_GLOBAL_MEM_CACHE_SIZE         , cl_ulong)
+    //KEY(CL_DEVICE_GLOBAL_MEM_CACHE_TYPE         , cl_device_mem_cache_type)
+  KEY(CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE     , cl_uint)
+  KEY(CL_DEVICE_GLOBAL_MEM_SIZE               , cl_ulong)
+    //KEY(CL_DEVICE_HALF_FP_CONFIG                , cl_device_fp_config)
+  KEY(CL_DEVICE_IMAGE_SUPPORT                 , cl_bool)
+  KEY(CL_DEVICE_IMAGE2D_MAX_HEIGHT            , size_t)
+  KEY(CL_DEVICE_IMAGE2D_MAX_WIDTH             , size_t)
+  KEY(CL_DEVICE_IMAGE3D_MAX_DEPTH             , size_t)
+  KEY(CL_DEVICE_IMAGE3D_MAX_HEIGHT            , size_t)
+  KEY(CL_DEVICE_IMAGE3D_MAX_WIDTH             , size_t)
+  KEY(CL_DEVICE_LOCAL_MEM_SIZE                , cl_ulong)
+    //KEY(CL_DEVICE_LOCAL_MEM_TYPE                , cl_device_local_mem_type)
+  KEY(CL_DEVICE_MAX_CLOCK_FREQUENCY           , cl_uint)
+  KEY(CL_DEVICE_MAX_COMPUTE_UNITS             , cl_uint)
+  KEY(CL_DEVICE_MAX_CONSTANT_ARGS             , cl_uint)
+  KEY(CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE      , cl_ulong)
+  KEY(CL_DEVICE_MAX_MEM_ALLOC_SIZE            , cl_ulong)
+  KEY(CL_DEVICE_MAX_PARAMETER_SIZE            , size_t)
+  KEY(CL_DEVICE_MAX_READ_IMAGE_ARGS           , cl_uint)
+  KEY(CL_DEVICE_MAX_SAMPLERS                  , cl_uint)
+  KEY(CL_DEVICE_MAX_WORK_GROUP_SIZE           , size_t)
+  KEY(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS      , cl_uint)
+  KEY(CL_DEVICE_MAX_WORK_ITEM_SIZES           , size_t)
+  KEY(CL_DEVICE_MAX_WRITE_IMAGE_ARGS          , cl_uint)
+  KEY(CL_DEVICE_MEM_BASE_ADDR_ALIGN           , cl_uint)
+  KEY(CL_DEVICE_MIN_DATA_TYPE_ALIGN_SIZE      , cl_uint)
+  KEY(CL_DEVICE_NAME                          , cl_string)
+  KEY(CL_DEVICE_PLATFORM                      , cl_platform_id)
+  KEY(CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR   , cl_uint)
+  KEY(CL_DEVICE_PREFERRED_VECTOR_WIDTH_SHORT  , cl_uint)
+  KEY(CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT    , cl_uint)
+  KEY(CL_DEVICE_PREFERRED_VECTOR_WIDTH_LONG   , cl_uint)
+  KEY(CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT  , cl_uint)
+  KEY(CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE , cl_uint)
+  KEY(CL_DEVICE_PROFILE                       , cl_string)
+  KEY(CL_DEVICE_PROFILING_TIMER_RESOLUTION    , size_t)
+    //KEY(CL_DEVICE_QUEUE_PROPERTIES              , cl_command_queue_properties)
+    /* CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE  */
+    /* CL_QUEUE_PROFILING_ENABLE  These properties are described in the table for clCreateCommandQueue. The mandated minimum capability is CL_QUEUE_PROFILING_ENABLE. */
+    //KEY(CL_DEVICE_SINGLE_FP_CONFIG              , cl_device_fp_config)
+    /* CL_FP_DENORM - denorms are supported  */
+    /* CL_FP_INF_NAN - INF and quiet NaNs are supported  */
+    /* CL_FP_ROUND_TO_NEAREST - round to nearest even rounding mode supported  */
+    /* CL_FP_ROUND_TO_ZERO - round to zero rounding mode supported  */
+    /* CL_FP_ROUND_TO_INF - round to +ve and -ve infinity rounding modes supported  */
+    /* CL_FP_FMA - IEEE754-2008 fused multiply-add is supported  The mandated minimum floating-point capability is CL_FP_ROUND_TO_NEAREST | CL_FP_INF_NAN. */
+    //KEY(CL_DEVICE_TYPE                          , cl_device_type)
+    /* CL_DEVICE_TYPE_CPU, CL_DEVICE_TYPE_GPU, CL_DEVICE_TYPE_ACCELERATOR, or CL_DEVICE_TYPE_DEFAULT. */
+  KEY(CL_DEVICE_VENDOR                        , cl_string)
+  KEY(CL_DEVICE_VENDOR_ID                     , cl_uint)
+  KEY(CL_DEVICE_VERSION                       , cl_string)
+    //  this name doesn't fit the naming convention KEY(CL_DRIVER_VERSION                       , cl_string)
+  assert(0);
+#undef KEY
+}
+
+CAMLprim value caml_opencl_device_info(value _id, value var)
+{
+  CAMLparam2(_id, var);
+  CAMLlocal1(ans);
+
+  cl_device_id id = Device_id_val(_id);
+  int len = 1024;
+  char buf[len];
+  postprocess_fn postprocess;
+  size_t bufLen;
+
+  check_err(clGetDeviceInfo(id, Device_info(var, &postprocess), len, buf, &bufLen));
+  CAMLreturn(postprocess(buf, bufLen));
 }
 
 /*

@@ -30,6 +30,57 @@ module Device : sig
   type device_type = [ `Accelerator | `All | `CPU | `Default | `GPU ]
 
   type t
+
+  val address_bits		    : t -> int
+  val compiler_available	    : t -> bool
+  (* val double_fp_config	    : t -> cl_device_fp_config *)
+  val endian_little		    : t -> bool
+  val error_correction_support	    : t -> bool
+  (* val execution_capabilities	    : t -> cl_device_exec_capabilities *)
+  val extensions		    : t -> string list
+  val global_mem_cache_size	    : t -> int64
+  (* val global_mem_cache_type	    : t -> cl_device_mem_cache_type *)
+  val global_mem_cacheline_size	    : t -> int
+  val global_mem_size		    : t -> int64
+  (* val half_fp_config		    : t -> cl_device_fp_config *)
+  val image_support		    : t -> bool
+  val image2d_max_height	    : t -> int
+  val image2d_max_width		    : t -> int
+  val image3d_max_depth		    : t -> int
+  val image3d_max_height	    : t -> int
+  val image3d_max_width		    : t -> int
+  val local_mem_size		    : t -> int64
+  (* val local_mem_type		    : t -> cl_device_local_mem_type *)
+  val max_clock_frequency	    : t -> int
+  val max_compute_units		    : t -> int
+  val max_constant_args		    : t -> int
+  val max_constant_buffer_size	    : t -> int64
+  val max_mem_alloc_size	    : t -> int64
+  val max_parameter_size	    : t -> int
+  val max_read_image_args	    : t -> int
+  val max_samplers		    : t -> int
+  val max_work_group_size	    : t -> int
+  val max_work_item_dimensions	    : t -> int
+  val max_work_item_sizes	    : t -> int
+  val max_write_image_args	    : t -> int
+  val mem_base_addr_align	    : t -> int
+  val min_data_type_align_size	    : t -> int
+  val name			    : t -> string
+  val platform			    : t -> Platform.t
+  val preferred_vector_width_char   : t -> int
+  val preferred_vector_width_short  : t -> int
+  val preferred_vector_width_int    : t -> int
+  val preferred_vector_width_long   : t -> int
+  val preferred_vector_width_float  : t -> int
+  val preferred_vector_width_double : t -> int
+  val profile			    : t -> string
+  val profiling_timer_resolution    : t -> int
+  (* val queue_properties	    : t -> cl_command_queue_properties *)
+  (* val single_fp_config	    : t -> cl_device_fp_config *)
+  (* val type			    : t -> cl_t *)
+  val vendor			    : t -> string
+  val vendor_id			    : t -> int
+  val version			    : t -> string
 end
 
 module Context : sig
