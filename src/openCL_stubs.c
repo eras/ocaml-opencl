@@ -639,25 +639,24 @@ CAMLprim value caml_opencl_enqueue_nd_range_kernel(value queue, value kernel, va
 
   int work_dim = Wosize_val(global_work_size);
   size_t gws[work_dim];
-  size_t *lws = NULL;
+  size_t lws[work_dim];
   int i;
   cl_event e;
+  int has_lws = Is_block(local_work_size);
 
-  if (Is_block(local_work_size))
+  if (has_lws)
     {
       assert(Wosize_val(Field(local_work_size, 0)) == Wosize_val(global_work_size));
-      lws = malloc(work_dim * sizeof(size_t));
     }
 
   for (i = 0; i < work_dim; i++)
     {
       gws[i] = Int_val(Field(global_work_size, i));
-      if (lws)
+      if (has_lws)
         lws[i] = Int_val(Field(Field(local_work_size, 0), i));
     }
 
-  check_err_free(clEnqueueNDRangeKernel(Command_queue_val(queue), Kernel_val(kernel), work_dim, NULL, gws, lws, 0, NULL, &e), lws);
-  if (lws) free(lws);
+  check_err_free(clEnqueueNDRangeKernel(Command_queue_val(queue), Kernel_val(kernel), work_dim, NULL, gws, has_lws ? lws : NULL, 0, NULL, &e), lws);
   ans = alloc_custom(&event_ops, sizeof(cl_event), 0, 1);
   Event_val(ans) = e;
 
