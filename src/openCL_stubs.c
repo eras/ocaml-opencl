@@ -307,13 +307,14 @@ CAMLprim value caml_opencl_context_devices(value context)
 {
   CAMLparam1(context);
   CAMLlocal1(ans);
-  size_t ndev;
+  size_t size_dev, ndev;
   cl_device_id *devs;
   int i;
 
-  check_err(clGetContextInfo(Context_val(context), CL_CONTEXT_DEVICES, 0, NULL, &ndev));
-  devs = malloc(ndev * sizeof(cl_device_id));
-  check_err_free(clGetContextInfo(Context_val(context), CL_CONTEXT_DEVICES, ndev, devs, NULL), devs);
+  check_err(clGetContextInfo(Context_val(context), CL_CONTEXT_DEVICES, 0, NULL, &size_dev));
+  devs = malloc(size_dev);
+  check_err_free(clGetContextInfo(Context_val(context), CL_CONTEXT_DEVICES, size_dev, devs, NULL), devs);
+  ndev = size_dev / sizeof(cl_device_id);
   ans = caml_alloc_tuple(ndev);
   for (i = 0; i < ndev; i++)
     Store_field(ans, i, Val_device_id(devs[i]));
