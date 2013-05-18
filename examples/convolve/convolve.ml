@@ -55,7 +55,7 @@ let () =
   let ids = OpenCL.Platform.available () in
   Printf.printf "OpenCL: %d platform(s) available\n%!" (Array.length ids);
   let id = ids.(0) in
-  Printf.printf "Platform 0:\n - %s\n - %s\n - %s\n - %s\n - %s\n%!" (OpenCL.Platform.profile id) (OpenCL.Platform.version id) (OpenCL.Platform.name id) (OpenCL.Platform.vendor id) (OpenCL.Platform.extensions id);
+  Printf.printf "Platform 0:\n - %s\n - %s\n - %s\n - %s\n - %s\n%!" (OpenCL.Platform.profile id) (OpenCL.Platform.version id) (OpenCL.Platform.name id) (OpenCL.Platform.vendor id) (String.concat " " (OpenCL.Platform.extensions id));
   let ctxt = OpenCL.Context.create_from_type ~platform:id `GPU in
   let devs = OpenCL.Context.devices ctxt in
   Printf.printf "CPU: %d device(s) available\n%!" (Array.length devs);

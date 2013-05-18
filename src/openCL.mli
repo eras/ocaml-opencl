@@ -23,7 +23,7 @@ module Platform : sig
 
   val vendor : t -> string
 
-  val extensions : t -> string
+  val extensions : t -> string list
 end
 
 module Device : sig

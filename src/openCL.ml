@@ -5,6 +5,21 @@ let init () =
 
 external unload_compiler : unit -> unit = "caml_opencl_unload_compiler"
 
+  (* for splitting extension list *)
+let split str =
+  let rec aux prev cur accu =
+    if cur = String.length str
+    then (prev, List.rev accu)
+    else
+      let prev, accu =
+	if str.[cur] = ' '
+	then (cur + 1, String.sub str prev (cur - prev)::accu)
+	else (prev, accu)
+      in
+      aux prev (cur + 1) accu
+  in
+  snd (aux 0 0 [])
+
 module Platform = struct
   type t
 
@@ -18,7 +33,7 @@ module Platform = struct
   let version p = info p `Version
   let name p = info p `Name
   let vendor p = info p `Vendor
-  let extensions p = info p `Extensions
+  let extensions p = split (info p `Extensions)
 end
 
 module Device = struct
@@ -88,21 +103,6 @@ module Device = struct
   type cl_platform_id = Platform.t
 
   external info : t -> info -> 'a = "caml_opencl_device_info"
-
-  (* for splitting extension list *)
-  let split str =
-    let rec aux prev cur accu =
-      if cur = String.length str
-      then (prev, List.rev accu)
-      else
-	let prev, accu =
-	  if str.[cur] = ' '
-	  then (cur + 1, String.sub str prev (cur - prev)::accu)
-	  else (prev, accu)
-      in
-      aux prev (cur + 1) accu
-    in
-    snd (aux 0 0 [])
 
   let address_bits d		      : cl_uint			    = info d `Address_bits
   let compiler_available d	      : cl_bool			    = info d `Compiler_available
