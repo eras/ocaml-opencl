@@ -147,6 +147,8 @@ module Command_queue : sig
   val nd_range_kernel : t -> Kernel.t -> ?local_work_size:int array -> int array -> Event.t
 
   val read_buffer : t -> Buffer.t -> bool -> int -> ('a, 'b, Bigarray.c_layout) Bigarray.Array1.t -> Event.t
+
+  val write_buffer : t -> Buffer.t -> bool -> int -> ('a, 'b, Bigarray.c_layout) Bigarray.Array1.t -> Event.t
 end
 
 (** Helper function to quickly test a kernel. *)

@@ -249,6 +249,8 @@ module Command_queue = struct
   external nd_range_kernel : t -> Kernel.t -> ?local_work_size:(int array) -> int array -> Event.t = "caml_opencl_enqueue_nd_range_kernel"
 
   external read_buffer : t -> Buffer.t -> bool -> int -> ('a, 'b, Bigarray.c_layout) Bigarray.Array1.t -> Event.t = "caml_opencl_enqueue_read_buffer"
+
+  external write_buffer : t -> Buffer.t -> bool -> int -> ('a, 'b, Bigarray.c_layout) Bigarray.Array1.t -> Event.t = "caml_opencl_enqueue_write_buffer"
 end
 
 let run ?platform ?(device_type=`GPU) kernel_file ?build_options kernel_name args ?local_work_size gws =

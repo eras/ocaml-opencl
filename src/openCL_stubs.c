@@ -678,6 +678,21 @@ CAMLprim value caml_opencl_enqueue_read_buffer(value queue, value buffer, value 
   CAMLreturn(ans);
 }
 
+CAMLprim value caml_opencl_enqueue_write_buffer(value queue, value buffer, value blocking, value offset, value ba)
+{
+  CAMLparam5(queue, buffer, blocking, offset, ba);
+  CAMLlocal1(ans);
+
+  cl_event e;
+
+  check_err(clEnqueueWriteBuffer(Command_queue_val(queue), Mem_val(buffer), Bool_val(blocking), Int_val(offset), caml_ba_byte_size(Caml_ba_array_val(ba)), Caml_ba_data_val(ba), 0, NULL, &e));
+
+  ans = alloc_custom(&event_ops, sizeof(cl_event), 0, 1);
+  Event_val(ans) = e;
+
+  CAMLreturn(ans);
+}
+
 /*
 CAMLprim value caml_opencl_equeue_write_buffer(value queue, value buffer, value blocking, value offset)
 {
